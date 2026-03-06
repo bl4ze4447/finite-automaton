@@ -11,16 +11,7 @@
 #include <fstream>
 #include <set>
 #include <sstream>
-// Tema 1 DFA
-// Starile
-// Alfabet
-// Starea initiala
-// Functia (pe randuri diferite)
-// Stari acceptoare
 
-// Cuvinte care spui daca sunt acceptate sau nu
-
-// Facut si Tema 2 NFA
 struct hash_pair {
     template <class T1, class T2>
     size_t operator()(const std::pair<T1, T2>& p) const
