@@ -80,9 +80,30 @@ public:
     /// end_transition_function
     /// final_state1 final_state2 ... final_stateK
     finite_automaton(const std::string& input_file_name);
+
+    /// Print a message about the validity of a word and increment words_passed
+    /// if it had the expected result.
     void invalid_word_message(int known_validity, size_t& words_passed) const;
+
+    /// Print a message about the validity of a word and increment words_passed
+    /// if it had the expected result.
     void valid_word_message(int known_validity, size_t& words_passed) const;
+
+    /// Check words from the given input file and print results
+    ///
+    /// Structure of a file should be exactly as below (* means optional)
+    ///
+    /// word1 expected_result1*
+    /// word2 expected_result2*
+    /// ...
+    /// wordN expected_resultN*
+    ///
+    /// Values for should be 0, if the word is invalid, or 1 if the word is valid
     void check_words_from(const std::string& input_file_name);
+
+    /// Recursively checks a word, by going multiple paths to check for cases
+    /// such as having a symbol that starts with another symbol ('a', 'aa', 'ab'),
+    /// or for cases where we have two or more trails that can be taken ((q0, a), (q0, b))
     bool check_word(const std::string& word, const std::string& state);
 
     friend std::ostream& operator<<(std::ostream& os, const finite_automaton& d) {
