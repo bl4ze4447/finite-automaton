@@ -153,12 +153,16 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
                 break;
             }
 
+            if (invalid_symbol)
+                is_word_valid = static_cast<int>(valid_word::INVALID);
+
+
             if (is_word_valid == static_cast<int>(valid_word::VALID)) {
                 valid_word_message(known_validity, words_passed);
                 break;
             }
 
-            if (is_word_valid == static_cast<int>(valid_word::INVALID) || invalid_symbol) {
+            if (is_word_valid == static_cast<int>(valid_word::INVALID)) {
                 this->states_trail.clear();
                 invalid_word_message(known_validity, words_passed);
                 break;
@@ -233,7 +237,7 @@ void finite_automaton::invalid_word_message(const int known_validity, size_t& wo
         std::cout << "[x] FA: Invalid | Test Case: Valid." << '\n';
     } else {
         ++words_passed;
-        std::cout << "[OK] FA: Invalid | Test Case: Valid." << '\n';
+        std::cout << "[OK] FA: Invalid | Test Case: Invalid." << '\n';
     }
 
     std::cout << "[Trail of states] ";
