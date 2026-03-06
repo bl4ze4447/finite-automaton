@@ -64,7 +64,7 @@ finite_automaton::finite_automaton(const std::string& input_file_name) {
 
 }
 
-void  finite_automaton::check_words_from(const std::string &input_file_name) {
+void finite_automaton::check_words_from(const std::string &input_file_name) {
     std::ifstream read(input_file_name);
     std::string line;
     std::string word;
@@ -106,52 +106,7 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
                 break;
             }
 
-            // Is this symbol missing from our alphabet?
-            bool invalid_symbol = true;
-            for (const auto& symbol_in_alphabet : this->alphabet) {
-                if (symbol_in_alphabet.size() + left > word.size())
-                    continue;
-
-                // Does this symbol exist in the word?
-                size_t symbol_ia_index = 0;
-                bool symbol_exists_in_word = true;
-                for (const auto& ch : symbol_in_alphabet) {
-                    if (word[left + symbol_ia_index] != ch)
-                        symbol_exists_in_word = false;
-
-                    ++symbol_ia_index;
-                }
-                if (symbol_exists_in_word == false)
-                    continue;
-
-                invalid_symbol = false;
-
-                // Does this one lead us to a valid choice?
-                if (!this->transition_function.contains({current_state, symbol_in_alphabet})) {
-                    is_word_valid = static_cast<int>(valid_word::INVALID);
-                    break;
-                }
-
-                // Explore all possible 'next' states and try to find the optimal one
-                for (const auto& next_state : this->transition_function[{current_state, symbol_in_alphabet}]) {
-                    if (check_word(word, next_state, left + symbol_in_alphabet.size())) {
-                        is_word_valid = static_cast<int>(valid_word::VALID);
-                        break;
-                    }
-                }
-
-                if (is_word_valid == static_cast<int>(valid_word::VALID))
-                    break;
-
-                // Dead end, reverse our road.
-                states_trail.pop_back();
-                is_word_valid = 0;
-                break;
-            }
-
-            if (invalid_symbol)
-                is_word_valid = static_cast<int>(valid_word::INVALID);
-
+            explore_symbols(current_state, is_word_valid, word, left);
 
             if (is_word_valid == static_cast<int>(valid_word::VALID)) {
                 valid_word_message(known_validity, words_passed);
@@ -173,7 +128,80 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
     std::cout << "Words passed: " << words_passed << '\n';
 }
 
-bool  finite_automaton::check_word(const std::string& word, const std::string& state, size_t left) {
+void finite_automaton::explore_symbols(std::string& current_state, int &is_word_valid, const std::string& word, size_t left) {
+    if (this->model_of_finite_automaton == "dfa") {
+        explore_symbols_dfa(current_state, is_word_valid, word, left);
+        return;
+    }
+
+    explore_symbols_nfa(current_state, is_word_valid, word, left);
+}
+
+bool finite_automaton::symbol_exists_in_word(const std::string& word, size_t left, const std::string& symbol) {
+    if (symbol.size() + left > word.size())
+        return false;
+
+    // Does this symbol exist in the word?
+    size_t symbol_ia_index = 0;
+    for (const auto& ch : symbol) {
+        if (word[left + symbol_ia_index] != ch)
+           return false;
+
+        ++symbol_ia_index;
+    }
+
+    return true;
+}
+
+void finite_automaton::explore_symbols_dfa(std::string& current_state, int &is_word_valid, const std::string& word, size_t left) {
+    std::string longest_symbol;
+    bool invalid_symbol = true;
+    for (const auto& symbol_in_alphabet : this->alphabet) {
+        if (!symbol_exists_in_word(word, left, symbol_in_alphabet))
+            continue;
+
+        invalid_symbol = false;
+        if (longest_symbol.size() < symbol_in_alphabet.size())
+            longest_symbol = symbol_in_alphabet;
+    }
+
+    if (invalid_symbol || !this->transition_function.contains({current_state, longest_symbol})) {
+        is_word_valid = static_cast<int>(valid_word::INVALID);
+        return;
+    }
+
+    for (const auto& next_state : this->transition_function[{current_state, longest_symbol}]) {
+        if (check_word(word, next_state, left + longest_symbol.size())) {
+            is_word_valid = static_cast<int>(valid_word::VALID);
+            return;
+        }
+    }
+
+    // Dead end.
+    is_word_valid = static_cast<int>(valid_word::INVALID);
+}
+
+void finite_automaton::explore_symbols_nfa(std::string& current_state, int &is_word_valid, const std::string& word, size_t left) {
+    for (const auto& symbol_in_alphabet : this->alphabet) {
+        if (!symbol_exists_in_word(word, left, symbol_in_alphabet))
+            continue;
+
+        if (!this->transition_function.contains({current_state, symbol_in_alphabet}))
+            continue;
+
+        // Explore all possible 'next' states and try to find the optimal one
+        for (const auto& next_state : this->transition_function[{current_state, symbol_in_alphabet}]) {
+            if (check_word(word, next_state, left + symbol_in_alphabet.size())) {
+                is_word_valid = static_cast<int>(valid_word::VALID);
+                return;
+            }
+        }
+    }
+
+    is_word_valid = static_cast<int>(valid_word::INVALID);
+}
+
+bool finite_automaton::check_word(const std::string& word, const std::string& state, size_t left) {
     states_trail.push_back(state);
 
     // Base cases
@@ -186,33 +214,11 @@ bool  finite_automaton::check_word(const std::string& word, const std::string& s
     }
 
     std::string current_state = state;
-    for (const auto& symbol_in_alphabet : this->alphabet) {
-        if (symbol_in_alphabet.size() + left > word.size())
-            continue;
+    int is_word_valid = static_cast<int>(valid_word::UNKNOWN);
+    explore_symbols(current_state, is_word_valid, word, left);
 
-        if (!symbol_in_alphabet.starts_with(word[left]))
-            continue;
-
-        size_t symbol_ia_index = 0;
-        bool symbol_exists_in_word = true;
-        for (const auto& ch : symbol_in_alphabet) {
-            if (word[left + symbol_ia_index] != ch)
-                symbol_exists_in_word = false;
-
-            ++symbol_ia_index;
-        }
-
-        if (symbol_exists_in_word == false)
-            continue;
-
-        // Does this one lead us to a valid choice?
-        if (!this->transition_function.contains({current_state, symbol_in_alphabet}))
-            continue;
-
-        for (const auto& next_state : this->transition_function[{current_state, symbol_in_alphabet}])
-            if (check_word(word, next_state, left + symbol_in_alphabet.size()))
-                return true;
-    }
+    if (is_word_valid == static_cast<int>(valid_word::VALID))
+        return true;
 
     states_trail.pop_back();
     return false;

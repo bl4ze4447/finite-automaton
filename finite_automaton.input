@@ -1,8 +1,9 @@
 nfa
 q0 q1 q2 q3 q4
-a b
+a b aa
 q0
 q0 a q1
+q0 aa q1
 q0 b q2
 q0 a q2
 q1 a q0

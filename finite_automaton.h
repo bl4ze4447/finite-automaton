@@ -70,6 +70,19 @@ class finite_automaton {
         INVALID,
         VALID
     };
+
+    /// Explores all possible symbols starting from the current_state and symbol
+    void explore_symbols_nfa(std::string& current_state, int &is_word_valid, const std::string& word, size_t left);
+
+    /// Explores only the longest possible symbol starting from the current_state and symbol
+    void explore_symbols_dfa(std::string& current_state, int &is_word_valid, const std::string& word, size_t left);
+
+    /// Switches between exploring all possible symbols and only the longest possible symbol
+    /// based on model_of_finite_automaton
+    void explore_symbols(std::string& current_state, int &is_word_valid, const std::string& word, size_t left);
+
+    /// Checks if the given symbol exists in the word at the given position
+    static bool symbol_exists_in_word(const std::string& word, size_t left, const std::string& symbol);
 public:
     /// Initialize the FA with values from the given input_file_name
     ///
