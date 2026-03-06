@@ -94,7 +94,7 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
 
         int is_word_valid = static_cast<int>(valid_word::UNKNOWN);
         for (size_t left = 0; left < word.size(); ++left) {
-            const char& symbol = word[left];
+            const char symbol = word[left];
             // Check if our FA accepts lambda
             if (this->LAMBDA == symbol && this->final_states.contains(current_state)) {
                 valid_word_message(known_validity, words_passed);
@@ -185,7 +185,7 @@ bool  finite_automaton::check_word(const std::string& word, const std::string& s
 
     std::string current_state = state;
     for (; left <= word.size(); ++left) {
-        const char& symbol = word[left];
+        const char symbol = word[left];
         for (const auto& symbol_in_alphabet : this->alphabet) {
             if (symbol_in_alphabet.size() + left > word.size())
                 continue;

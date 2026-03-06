@@ -38,7 +38,7 @@ struct hash_pair {
 
 class finite_automaton {
     /// The 'void' character in a deterministic finite automaton
-    const char8_t LAMBDA = '?';
+    const char LAMBDA = '?';
 
     /// Internal nodes for our deterministic finite automaton graph
     std::set<std::string> states;
