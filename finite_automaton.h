@@ -28,22 +28,22 @@ struct hash_pair {
 };
 
 class finite_automaton {
-    /// The 'void' character in a deterministic finite automaton
+    /// The 'void' character in a finite automaton
     const char LAMBDA = '?';
 
-    /// Internal nodes for our deterministic finite automaton graph
+    /// Internal nodes for the finite automaton graph
     std::set<std::string> states;
 
-    /// Possible values for links between states
+    /// Value of the links from one state to another
     std::set<std::string> alphabet;
 
     /// Transforms the (current_state, symbol) pair into a new state
     std::unordered_map<std::pair<std::string, std::string>, std::set<std::string>, hash_pair> transition_function;
 
-    /// Starting point for our deterministic finite automaton
+    /// Starting point for the finite automaton
     std::string initial_state;
 
-    /// Internal nodes where we accept the input as being valid
+    /// States where we accept the input as being valid
     ///
     /// final_states <= states
     std::set<std::string> final_states;
@@ -108,12 +108,10 @@ public:
     /// ...
     /// wordN expected_resultN*
     ///
-    /// Values for should be 0, if the word is invalid, or 1 if the word is valid
+    /// Values for expected_result should be 0, if the word is invalid, or 1 if the word is valid
     void check_words_from(const std::string& input_file_name);
 
-    /// Recursively checks a word, by going multiple paths to check for cases
-    /// such as having a symbol that starts with another symbol ('a', 'aa', 'ab'),
-    /// or for cases where we have two or more trails that can be taken ((q0, a), (q0, b))
+    /// Recursively checks a word, using the required explore_symbols function
     bool check_word(const std::string& word, const std::string& state, size_t left = 0);
 
     friend std::ostream& operator<<(std::ostream& os, const finite_automaton& d) {
