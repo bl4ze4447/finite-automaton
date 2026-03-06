@@ -11,6 +11,11 @@ finite_automaton::finite_automaton(const std::string& input_file_name) {
     std::istringstream ss;
     std::string line;
 
+    // Read finite automaton model
+    std::getline(read, line);
+    ss = std::istringstream(line);
+    ss >> model_of_finite_automaton;
+
     // Read states
     std::getline(read, line);
     ss = std::istringstream(line);
@@ -37,6 +42,9 @@ finite_automaton::finite_automaton(const std::string& input_file_name) {
         ss = std::istringstream(line);
         ss >> current_state >> symbol >> new_state;
         if (transition_function.contains({current_state, symbol})) {
+            if (model_of_finite_automaton == "dfa")
+                throw std::invalid_argument("finite_automaton::finite_automaton(" + input_file_name + "): dfa model cannot have duplicate transitions.");
+
             transition_function[{current_state, symbol}].insert(new_state);
         } else {
             std::set<std::string> new_state_set;
@@ -53,6 +61,7 @@ finite_automaton::finite_automaton(const std::string& input_file_name) {
     std::string final_state;
     while (ss >> final_state)
         final_states.insert(final_state);
+
 }
 
 void  finite_automaton::check_words_from(const std::string &input_file_name) {

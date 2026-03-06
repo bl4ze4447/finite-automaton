@@ -62,16 +62,20 @@ class finite_automaton {
     /// If the FA rejects a word, the trail will be empty
     std::vector<std::string> states_trail;
 
+    /// The current model of the FA
+    std::string model_of_finite_automaton;
+
     enum class valid_word {
         UNKNOWN = -1,
         INVALID,
         VALID
     };
 public:
-    /// Initialize the DFA with values from the given input_file_name
+    /// Initialize the FA with values from the given input_file_name
     ///
     /// Structure of file must be exactly as below (K <= N <= M):
     ///
+    /// model_of_finite_automaton
     /// state1 state2 ... stateN
     /// symbol1 symbol2 ... symbolM
     /// initial_state
@@ -79,6 +83,8 @@ public:
     /// ....
     /// end_transition_function
     /// final_state1 final_state2 ... final_stateK
+    ///
+    /// model_of_finite_automaton can be either dfa or nfa
     finite_automaton(const std::string& input_file_name);
 
     /// Print a message about the validity of a word and increment words_passed
