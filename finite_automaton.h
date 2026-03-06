@@ -110,7 +110,7 @@ public:
     /// Recursively checks a word, by going multiple paths to check for cases
     /// such as having a symbol that starts with another symbol ('a', 'aa', 'ab'),
     /// or for cases where we have two or more trails that can be taken ((q0, a), (q0, b))
-    bool check_word(const std::string& word, const std::string& state);
+    bool check_word(const std::string& word, const std::string& state, size_t left = 0);
 
     friend std::ostream& operator<<(std::ostream& os, const finite_automaton& d) {
         os << '\n';

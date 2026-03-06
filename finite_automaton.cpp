@@ -92,9 +92,9 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
         this->states_trail.clear();
         states_trail.push_back(current_state);
 
-        size_t nth_symbol = 0;
         int is_word_valid = static_cast<int>(valid_word::UNKNOWN);
-        for (const auto& symbol : word) {
+        for (size_t left = 0; left < word.size(); ++left) {
+            const char& symbol = word[left];
             // Check if our FA accepts lambda
             if (this->LAMBDA == symbol && this->final_states.contains(current_state)) {
                 valid_word_message(known_validity, words_passed);
@@ -109,7 +109,7 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
             // Is this symbol missing from our alphabet?
             bool invalid_symbol = true;
             for (const auto& symbol_in_alphabet : this->alphabet) {
-                if (symbol_in_alphabet.size() + nth_symbol > word.size())
+                if (symbol_in_alphabet.size() + left > word.size())
                     continue;
 
                 // Check if we can use this symbol
@@ -119,7 +119,7 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
                 size_t symbol_ia_index = 0;
                 bool symbol_exists_in_word = true;
                 for (const auto& ch : symbol_in_alphabet) {
-                    if (word[nth_symbol + symbol_ia_index] != ch)
+                    if (word[left + symbol_ia_index] != ch)
                         symbol_exists_in_word = false;
 
                     ++symbol_ia_index;
@@ -138,7 +138,7 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
 
                 // Explore all possible 'next' states and try to find the optimal one
                 for (const auto& next_state : this->transition_function[{current_state, symbol_in_alphabet}]) {
-                    if (check_word(word.substr(nth_symbol + symbol_in_alphabet.size()), next_state)) {
+                    if (check_word(word, next_state, left + symbol_in_alphabet.size())) {
                         is_word_valid = static_cast<int>(valid_word::VALID);
                         break;
                     }
@@ -167,8 +167,6 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
                 invalid_word_message(known_validity, words_passed);
                 break;
             }
-
-            ++nth_symbol;
         }
 
         if (!this->final_states.contains(current_state) && is_word_valid == static_cast<int>(valid_word::UNKNOWN)) {
@@ -180,16 +178,16 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
     std::cout << "Words passed: " << words_passed << '\n';
 }
 
-bool  finite_automaton::check_word(const std::string& word, const std::string& state) {
+bool  finite_automaton::check_word(const std::string& word, const std::string& state, size_t left) {
     states_trail.push_back(state);
-    if (word.empty() && this->final_states.contains(state))
+    if (left == word.size() && this->final_states.contains(state))
         return true;
 
-    size_t nth_symbol = 0;
     std::string current_state = state;
-    for (const auto& symbol : word) {
+    for (; left <= word.size(); ++left) {
+        const char& symbol = word[left];
         for (const auto& symbol_in_alphabet : this->alphabet) {
-            if (symbol_in_alphabet.size() + nth_symbol > word.size())
+            if (symbol_in_alphabet.size() + left > word.size())
                 continue;
 
             if (!symbol_in_alphabet.starts_with(symbol))
@@ -198,7 +196,7 @@ bool  finite_automaton::check_word(const std::string& word, const std::string& s
             size_t symbol_ia_index = 0;
             bool symbol_exists_in_word = true;
             for (const auto& ch : symbol_in_alphabet) {
-                if (word[nth_symbol + symbol_ia_index] != ch)
+                if (word[left + symbol_ia_index] != ch)
                     symbol_exists_in_word = false;
 
                 ++symbol_ia_index;
@@ -212,7 +210,7 @@ bool  finite_automaton::check_word(const std::string& word, const std::string& s
                 continue;
 
             for (const auto& next_state : this->transition_function[{current_state, symbol_in_alphabet}]) {
-                if (check_word(word.substr(nth_symbol + symbol_in_alphabet.size()), next_state)) {
+                if (check_word(word, next_state, left + symbol_in_alphabet.size())) {
                     return true;
                 }
             }
@@ -222,7 +220,6 @@ bool  finite_automaton::check_word(const std::string& word, const std::string& s
             states_trail.pop_back();
             return false;
         }
-        ++nth_symbol;
     }
 
 
