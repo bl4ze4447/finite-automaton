@@ -72,56 +72,32 @@ void finite_automaton::check_words_from(const std::string &input_file_name) {
     // Used for testing. If the FA has another value than this, the user will be informed.
     int known_validity = static_cast<int>(valid_word::UNKNOWN);
 
-    // Increases each time the FA has the same value as is_valid at the end
+    // Increases each time the FA has the same result as known_validty at the end
     // of the word check.
     size_t words_passed = 0;
     size_t num_of_words = 0;
     while (std::getline(read, line)) {
-        ++num_of_words;
-        std::istringstream iss(line);
-        iss >> word;
-        if (iss.fail())
+        std::istringstream ss(line);
+        ss >> word;
+        if (ss.fail())
             throw std::invalid_argument("finite_automaton::check_words_from(" + input_file_name + "): cannot read word.");
 
-        iss >> known_validity;
-        if (iss.fail()) known_validity = static_cast<int>(valid_word::UNKNOWN);
+        ss >> known_validity;
+        if (ss.fail())
+            known_validity = static_cast<int>(valid_word::UNKNOWN);
 
         std::cout << "[Info] Checking word: " << word << '\n';
-
         std::string current_state = this->initial_state;
+
         this->states_trail.clear();
         states_trail.push_back(current_state);
 
-        int is_word_valid = static_cast<int>(valid_word::UNKNOWN);
-        for (size_t left = 0; left < word.size(); ++left) {
-            const char symbol = word[left];
-            // Check if our FA accepts lambda
-            if (this->LAMBDA == symbol && this->final_states.contains(current_state)) {
-                valid_word_message(known_validity, words_passed);
-                break;
-            }
-            if (this->LAMBDA == symbol) {
-                states_trail.clear();
-                invalid_word_message(known_validity, words_passed);
-                break;
-            }
-
-            explore_symbols(current_state, is_word_valid, word, left);
-
-            if (is_word_valid == static_cast<int>(valid_word::VALID)) {
-                valid_word_message(known_validity, words_passed);
-                break;
-            }
-
-            if (is_word_valid == static_cast<int>(valid_word::INVALID)) {
-                this->states_trail.clear();
-                invalid_word_message(known_validity, words_passed);
-                break;
-            }
-        }
-
-        if (!this->final_states.contains(current_state) && is_word_valid == static_cast<int>(valid_word::UNKNOWN))
+        if (check_word(word, current_state, 0))
             valid_word_message(known_validity, words_passed);
+        else
+            invalid_word_message(known_validity, words_passed);
+
+        ++num_of_words;
     }
 
     std::cout << "Number of words: " << num_of_words << '\n';
@@ -210,6 +186,14 @@ bool finite_automaton::check_word(const std::string& word, const std::string& st
 
     if (left == word.size()) {
         states_trail.pop_back();
+        return false;
+    }
+
+    if (this->LAMBDA == word[left] && this->final_states.contains(state)) {
+        return true;
+    }
+    if (this->LAMBDA == word[left]) {
+        states_trail.clear();
         return false;
     }
 
