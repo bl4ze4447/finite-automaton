@@ -112,10 +112,7 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
                 if (symbol_in_alphabet.size() + left > word.size())
                     continue;
 
-                // Check if we can use this symbol
-                // Also treats cases where:
-                // alphabet = [a, aa, aaa]
-                // symbol = a
+                // Does this symbol exist in the word?
                 size_t symbol_ia_index = 0;
                 bool symbol_exists_in_word = true;
                 for (const auto& ch : symbol_in_alphabet) {
@@ -124,7 +121,6 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
 
                     ++symbol_ia_index;
                 }
-
                 if (symbol_exists_in_word == false)
                     continue;
 
@@ -169,9 +165,8 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
             }
         }
 
-        if (!this->final_states.contains(current_state) && is_word_valid == static_cast<int>(valid_word::UNKNOWN)) {
+        if (!this->final_states.contains(current_state) && is_word_valid == static_cast<int>(valid_word::UNKNOWN))
             valid_word_message(known_validity, words_passed);
-        }
     }
 
     std::cout << "Number of words: " << num_of_words << '\n';
@@ -180,48 +175,44 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
 
 bool  finite_automaton::check_word(const std::string& word, const std::string& state, size_t left) {
     states_trail.push_back(state);
+
+    // Base cases
     if (left == word.size() && this->final_states.contains(state))
         return true;
 
-    std::string current_state = state;
-    for (; left <= word.size(); ++left) {
-        const char symbol = word[left];
-        for (const auto& symbol_in_alphabet : this->alphabet) {
-            if (symbol_in_alphabet.size() + left > word.size())
-                continue;
-
-            if (!symbol_in_alphabet.starts_with(symbol))
-                continue;
-
-            size_t symbol_ia_index = 0;
-            bool symbol_exists_in_word = true;
-            for (const auto& ch : symbol_in_alphabet) {
-                if (word[left + symbol_ia_index] != ch)
-                    symbol_exists_in_word = false;
-
-                ++symbol_ia_index;
-            }
-
-            if (symbol_exists_in_word == false)
-                continue;
-
-            // Does this one lead us to a valid choice?
-            if (!this->transition_function.contains({current_state, symbol_in_alphabet}))
-                continue;
-
-            for (const auto& next_state : this->transition_function[{current_state, symbol_in_alphabet}]) {
-                if (check_word(word, next_state, left + symbol_in_alphabet.size())) {
-                    return true;
-                }
-            }
-        }
-
-        if (!this->transition_function.contains({current_state, std::to_string(symbol)})) {
-            states_trail.pop_back();
-            return false;
-        }
+    if (left == word.size()) {
+        states_trail.pop_back();
+        return false;
     }
 
+    std::string current_state = state;
+    for (const auto& symbol_in_alphabet : this->alphabet) {
+        if (symbol_in_alphabet.size() + left > word.size())
+            continue;
+
+        if (!symbol_in_alphabet.starts_with(word[left]))
+            continue;
+
+        size_t symbol_ia_index = 0;
+        bool symbol_exists_in_word = true;
+        for (const auto& ch : symbol_in_alphabet) {
+            if (word[left + symbol_ia_index] != ch)
+                symbol_exists_in_word = false;
+
+            ++symbol_ia_index;
+        }
+
+        if (symbol_exists_in_word == false)
+            continue;
+
+        // Does this one lead us to a valid choice?
+        if (!this->transition_function.contains({current_state, symbol_in_alphabet}))
+            continue;
+
+        for (const auto& next_state : this->transition_function[{current_state, symbol_in_alphabet}])
+            if (check_word(word, next_state, left + symbol_in_alphabet.size()))
+                return true;
+    }
 
     states_trail.pop_back();
     return false;
