@@ -86,7 +86,7 @@ void  finite_automaton::check_words_from(const std::string &input_file_name) {
         iss >> known_validity;
         if (iss.fail()) known_validity = static_cast<int>(valid_word::UNKNOWN);
 
-        std::cout << "[FA] Word: " << word << '\n';
+        std::cout << "[Info] Checking word: " << word << '\n';
 
         std::string current_state = this->initial_state;
         this->states_trail.clear();
@@ -228,17 +228,17 @@ bool  finite_automaton::check_word(const std::string& word, const std::string& s
 
 void finite_automaton::invalid_word_message(const int known_validity, size_t& words_passed) const {
     if (known_validity == static_cast<int>(valid_word::UNKNOWN)) {
-        std::cout << "[Invalid/Accepted] No is_valid value to guarantee result." << '\n';
+        std::cout << "[?] FA: Invalid | Test Case: Missing." << '\n';
     } else if (known_validity == static_cast<int>(valid_word::VALID)) {
-        std::cout << "[Invalid/Wrong Result] This word should have been accepted." << '\n';
+        std::cout << "[x] FA: Invalid | Test Case: Valid." << '\n';
     } else {
         ++words_passed;
-        std::cout << "[Invalid/OK] Result is guaranteed." << '\n';
+        std::cout << "[OK] FA: Invalid | Test Case: Valid." << '\n';
     }
 
-    std::cout << "Trail of states: ";
+    std::cout << "[Trail of states] ";
     if (states_trail.empty()) {
-        std::cout << "No states visited." << '\n' << '\n';
+        std::cout << "No states visited." << "\n\n";
         return;
     }
 
@@ -246,23 +246,28 @@ void finite_automaton::invalid_word_message(const int known_validity, size_t& wo
     for (size_t i = 1; i < states_trail.size(); ++i) {
         std::cout << " -> " << states_trail[i];
     }
-    std::cout << '\n' << '\n';
+    std::cout << "\n\n";
 }
 
 void finite_automaton::valid_word_message(const int known_validity, size_t& words_passed) const {
     if (known_validity == static_cast<int>(valid_word::UNKNOWN)) {
-        std::cout << "[Valid/Accepted] No is_valid value to guarantee result." << '\n';
+        std::cout << "[?] FA: Valid | Test Case: Missing." << '\n';
     } else if (known_validity == static_cast<int>(valid_word::INVALID)) {
-        std::cout << "[Valid/Wrong Result] This word should not have been accepted." << '\n';
+        std::cout << "[x] FA: Valid | Test Case: Invalid." << '\n';
     } else {
         ++words_passed;
-        std::cout << "[Valid/OK] Result is guaranteed." << '\n';
+        std::cout << "[OK] FA: Valid | Test Case: Valid." << '\n';
     }
 
-    std::cout << "Trail of states: ";
+    std::cout << "[Trail of states] ";
+    if (states_trail.empty()) {
+        std::cout << "No states visited." << "\n\n";
+        return;
+    }
+
     std::cout << states_trail.front();
     for (size_t i = 1; i < states_trail.size(); ++i) {
         std::cout << " -> " << states_trail[i];
     }
-    std::cout << '\n' << '\n';
+    std::cout << "\n\n";
 }
